@@ -53,8 +53,20 @@ public class TFIDFItemScorer extends AbstractItemScorer {
             // Get the item vector for this item
             SparseVector iv = model.getItemVector(e.getKey());
             // TODO Compute the cosine of this item and the user's profile, store it in the output vector
+            double ui = 0, u2 = 0, i2 = 0;
+            for (long tagId: iv.keySet()){
+                double it = iv.get(tagId);
+                i2 += it * it;
+                if(userVector.containsKey(tagId)){
+                    double ut = userVector.get(tagId);
+                    ui += it * ut;
+                    u2 += ut * ut;
+                }
+            }
+            double cosValue = ui / (Math.sqrt(u2) * Math.sqrt(i2));
+            output.set(e.getKey(), cosValue);
             // TODO And remove this exception to say you've implemented it
-            throw new UnsupportedOperationException("stub implementation");
+            //throw new UnsupportedOperationException("stub implementation");
         }
     }
 
@@ -80,6 +92,10 @@ public class TFIDFItemScorer extends AbstractItemScorer {
             if (p != null && p.getValue() >= 3.5) {
                 // The user likes this item!
                 // TODO Get the item's vector and add it to the user's profile
+                SparseVector iv = model.getItemVector(p.getItemId());
+                for(long tagId: iv.keySet()) {
+                    profile.set(tagId, profile.get(tagId) + iv.get(tagId));
+                }
             }
         }
 

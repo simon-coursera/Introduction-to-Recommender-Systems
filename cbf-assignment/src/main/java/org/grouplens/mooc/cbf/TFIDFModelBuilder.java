@@ -13,6 +13,8 @@ import javax.inject.Provider;
 import java.util.Map;
 import java.util.Set;
 
+import java.math.*;
+
 /**
  * Builder for computing {@linkplain TFIDFModel TF-IDF models} from item tag data.  Each item is
  * represented by a normalized TF-IDF vector.
@@ -71,8 +73,23 @@ public class TFIDFModelBuilder implements Provider<TFIDFModel> {
             // Now the vector is empty (all keys are 'unset').
 
             // TODO Populate the work vector with the number of times each tag is applied to this item.
+            for(String tagIdStr:dao.getItemTags(item)){
+                long tagId = tagIds.get(tagIdStr);
+                if (work.containsKey(tagId)){
+                    work.set(tagId, work.get(tagId) + 1);
+                } else {
+                    work.set(tagId, 1);
+                }
+            }
 
             // TODO Increment the document frequency vector once for each unique tag on the item.
+            for(long tagId: work.keySet()){
+                if(docFreq.containsKey(tagId)){
+                    docFreq.set(tagId, docFreq.get(tagId) + 1);
+                } else {
+                    docFreq.set(tagId, 1);
+                }
+            }
 
             // Save a shrunk copy of the vector (only storing tags that apply to this item) in
             // our map, we'll add IDF and normalize later.
@@ -85,6 +102,8 @@ public class TFIDFModelBuilder implements Provider<TFIDFModel> {
         // Invert and log the document frequency.  We can do this in-place.
         for (VectorEntry e: docFreq.fast()) {
             // TODO Update this document frequency entry to be a log-IDF value
+            long tagId = e.getKey();
+            docFreq.set(tagId, Math.log(items.size() / docFreq.get(tagId)));
         }
 
         // Now docFreq is a log-IDF vector.
@@ -94,10 +113,17 @@ public class TFIDFModelBuilder implements Provider<TFIDFModel> {
         for (Map.Entry<Long,MutableSparseVector> entry: itemVectors.entrySet()) {
             MutableSparseVector tv = entry.getValue();
             // TODO Convert this vector to a TF-IDF vector
+            for(long tagId: tv.keySet()){
+                double tfidf = tv.get(tagId) * docFreq.get(tagId);
+                tv.set(tagId, tfidf);
+            }
 
             // TODO Normalize the TF-IDF vector to be a unit vector
             // HINT The method tv.norm() will give you the Euclidian length of the vector
-            
+            for (long tagId:tv.keySet()){
+                tv.set(tagId, tv.get(tagId) / tv.norm());
+            }
+
             // Store a frozen (immutable) version of the vector in the model data.
             modelData.put(entry.getKey(), tv.freeze());
         }
