@@ -54,7 +54,9 @@ public class TFIDFItemScorer extends AbstractItemScorer {
             SparseVector iv = model.getItemVector(e.getKey());
             // TODO Compute the cosine of this item and the user's profile, store it in the output vector
             double ui = 0, u2 = 0, i2 = 0;
-            for (long tagId: iv.keySet()){
+
+            for(VectorEntry ev: iv.fast()) {
+                long tagId = ev.getKey();
                 double it = iv.get(tagId);
                 i2 += it * it;
                 if(userVector.containsKey(tagId)){
@@ -93,7 +95,8 @@ public class TFIDFItemScorer extends AbstractItemScorer {
                 // The user likes this item!
                 // TODO Get the item's vector and add it to the user's profile
                 SparseVector iv = model.getItemVector(p.getItemId());
-                for(long tagId: iv.keySet()) {
+                for(VectorEntry e: iv.fast()){
+                    long tagId = e.getKey();
                     profile.set(tagId, profile.get(tagId) + iv.get(tagId));
                 }
             }

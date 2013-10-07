@@ -83,7 +83,8 @@ public class TFIDFModelBuilder implements Provider<TFIDFModel> {
             }
 
             // TODO Increment the document frequency vector once for each unique tag on the item.
-            for(long tagId: work.keySet()){
+            for(VectorEntry e: work.fast()) {
+                long tagId = e.getKey();
                 if(docFreq.containsKey(tagId)){
                     docFreq.set(tagId, docFreq.get(tagId) + 1);
                 } else {
@@ -113,14 +114,17 @@ public class TFIDFModelBuilder implements Provider<TFIDFModel> {
         for (Map.Entry<Long,MutableSparseVector> entry: itemVectors.entrySet()) {
             MutableSparseVector tv = entry.getValue();
             // TODO Convert this vector to a TF-IDF vector
-            for(long tagId: tv.keySet()){
+            for(VectorEntry e: tv.fast()) {
+                long tagId = e.getKey();
                 double tfidf = tv.get(tagId) * docFreq.get(tagId);
                 tv.set(tagId, tfidf);
             }
 
             // TODO Normalize the TF-IDF vector to be a unit vector
             // HINT The method tv.norm() will give you the Euclidian length of the vector
-            for (long tagId:tv.keySet()){
+
+            for(VectorEntry e: tv.fast()) {
+                long tagId = e.getKey();
                 tv.set(tagId, tv.get(tagId) / tv.norm());
             }
 
