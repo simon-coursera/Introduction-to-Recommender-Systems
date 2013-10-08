@@ -85,11 +85,7 @@ public class TFIDFModelBuilder implements Provider<TFIDFModel> {
             // TODO Increment the document frequency vector once for each unique tag on the item.
             for(VectorEntry e: work.fast()) {
                 long tagId = e.getKey();
-                if(docFreq.containsKey(tagId)){
-                    docFreq.set(tagId, docFreq.get(tagId) + 1);
-                } else {
-                    docFreq.set(tagId, 1);
-                }
+                docFreq.set(tagId, docFreq.get(tagId) + 1);
             }
 
             // Save a shrunk copy of the vector (only storing tags that apply to this item) in
