@@ -119,11 +119,7 @@ public class TFIDFModelBuilder implements Provider<TFIDFModel> {
             // TODO Normalize the TF-IDF vector to be a unit vector
             // HINT The method tv.norm() will give you the Euclidian length of the vector
 
-            for(VectorEntry e: tv.fast()) {
-                long tagId = e.getKey();
-                tv.set(tagId, tv.get(tagId) / tv.norm());
-            }
-
+            tv.multiply(1/tv.norm());
             // Store a frozen (immutable) version of the vector in the model data.
             modelData.put(entry.getKey(), tv.freeze());
         }
